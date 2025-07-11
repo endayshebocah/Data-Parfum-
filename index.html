@@ -370,12 +370,15 @@
         import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, doc, deleteDoc, updateDoc, setDoc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Setup ---
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-perfume-app';
-        
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+const firebaseConfig = {
+  apiKey: "AIzaSyAV2UQFCjLyYV0G5R3ULQrOnmT3R1KnPtQ",
+  authDomain: "data-parfum.firebaseapp.com",
+  projectId: "data-parfum",
+  storageBucket: "data-parfum.firebasestorage.app",
+  messagingSenderId: "509453230635",
+  appId: "1:509453230635:web:caa5098ad27ca54ba8c06e",
+  measurementId: "G-ERTBH3HWRH"
+};
 
         // --- Global State ---
         let userId = null;
