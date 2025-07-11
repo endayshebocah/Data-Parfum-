@@ -6,7 +6,6 @@
     <title>Database Stok Parfum - Fitur Lanjutan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Library untuk Excel dan CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
@@ -123,7 +122,6 @@
         </header>
 
         <main class="space-y-8 flex-grow flex flex-col min-h-0">
-            <!-- Kolom Input Data -->
             <section id="input-section" class="bg-gray-800 p-6 rounded-xl shadow-2xl card-3d border border-gray-700 flex-shrink-0">
                 <button id="toggle-form-btn" class="w-full flex justify-between items-center text-left">
                     <h2 id="form-title" class="text-2xl font-semibold">Input Transaksi Baru</h2>
@@ -179,7 +177,6 @@
                 </div>
             </section>
 
-            <!-- Kolom Total Stok Keseluruhan -->
             <section id="stock-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-6 flex-shrink-0">
                  <div>
                     <h3 class="text-md font-semibold text-gray-300 text-center mb-2">Total Parfum Masuk</h3>
@@ -201,24 +198,20 @@
                 </div>
             </section>
             
-            <!-- Kontainer untuk Kategori Parfum -->
             <section class="flex-grow flex flex-col min-h-0">
                 <h2 class="text-3xl font-bold my-6 text-center border-b-2 border-gray-700 pb-4 flex-shrink-0">Kategori Stok Parfum</h2>
                 <div class="flex-grow overflow-y-auto vertical-scrollbar pr-2">
                     <div id="perfume-categories-container" class="space-y-4">
-                        <!-- Kategori akan dirender oleh JavaScript di sini -->
-                    </div>
+                        </div>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- Modals -->
     <div id="settings-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-30 modal-transition">
         <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-lg transform scale-95 content-transition">
             <h3 class="text-xl font-bold text-purple-400 mb-4">Pengaturan Harga</h3>
             <form id="settings-form" class="space-y-6">
-                <!-- Harga -->
                 <div class="p-4 rounded-lg border border-gray-600">
                     <h4 class="text-lg font-semibold text-gray-200 mb-2">Ukuran 30 ml</h4>
                     <div class="grid grid-cols-2 gap-4">
@@ -352,7 +345,6 @@
         </div>
     </div>
     
-    <!-- New Delete Confirmation Modal -->
     <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-40 modal-transition">
         <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-md transform scale-95 content-transition">
             <h3 class="text-xl font-bold text-red-400">Konfirmasi Hapus</h3>
@@ -370,15 +362,21 @@
         import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, doc, deleteDoc, updateDoc, setDoc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Setup ---
-const firebaseConfig = {
-  apiKey: "AIzaSyAV2UQFCjLyYV0G5R3ULQrOnmT3R1KnPtQ",
-  authDomain: "data-parfum.firebaseapp.com",
-  projectId: "data-parfum",
-  storageBucket: "data-parfum.firebasestorage.app",
-  messagingSenderId: "509453230635",
-  appId: "1:509453230635:web:caa5098ad27ca54ba8c06e",
-  measurementId: "G-ERTBH3HWRH"
-};
+        const firebaseConfig = {
+          apiKey: "AIzaSyAV2UQFCjLyYV0G5R3ULQrOnmT3R1KnPtQ",
+          authDomain: "data-parfum.firebaseapp.com",
+          projectId: "data-parfum",
+          storageBucket: "data-parfum.firebasestorage.app",
+          messagingSenderId: "509453230635",
+          appId: "1:509453230635:web:caa5098ad27ca54ba8c06e",
+          measurementId: "G-ERTBH3HWRH"
+        };
+
+        // Inisialisasi Firebase App, Auth, dan Firestore
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const APP_ID = firebaseConfig.appId; // Pastikan APP_ID didefinisikan secara global
 
         // --- Global State ---
         let userId = null;
@@ -395,7 +393,8 @@ const firebaseConfig = {
         let protectedAction = null;
         let pinToConfirm = '';
         let pinMode = 'verify'; // 'verify', 'set', 'confirm'
-        const PIN_KEY = `perfumeAppPIN_${appId}`;
+        // Gunakan APP_ID yang sudah didefinisikan dari firebaseConfig
+        const PIN_KEY = `perfumeAppPIN_${APP_ID}`; 
         
         // --- DOM Elements ---
         const menuButton = document.getElementById('menu-button');
@@ -464,7 +463,8 @@ const firebaseConfig = {
         }
 
         function checkPinStatus() {
-            if (localStorage.getItem(PIN_KEY)) {
+            // Menggunakan PIN_KEY yang sudah didefinisikan dengan APP_ID
+            if (localStorage.getItem(PIN_KEY)) { 
                 isPinSet = true;
             } else {
                 isPinSet = false;
@@ -552,11 +552,14 @@ const firebaseConfig = {
             if (user) {
                 userId = user.uid;
                 isAuthReady = true;
-                checkPinStatus();
+                checkPinStatus(); // Pastikan ini dipanggil setelah APP_ID didefinisikan
                 await loadPriceSettings();
                 await setupRealtimeListener();
             } else {
                  try {
+                    // Jika Anda memiliki mekanisme custom token, pastikan __initial_auth_token didefinisikan
+                    // Contoh: const __initial_auth_token = "YOUR_CUSTOM_TOKEN_HERE";
+                    // Jika tidak, Anda bisa langsung menggunakan signInAnonymously
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } else {
@@ -577,7 +580,8 @@ const firebaseConfig = {
             document.getElementById('editing-id').value = '';
             document.getElementById('form-title').textContent = 'Input Transaksi Baru';
             document.getElementById('submit-btn').textContent = 'Simpan Transaksi';
-            document.getElementById('submit-btn').classList.remove('hidden');
+            // Pastikan submit-btn tidak tersembunyi saat reset
+            document.getElementById('submit-btn').classList.remove('hidden'); 
             document.getElementById('cancel-edit-btn').classList.add('hidden');
             document.getElementById('nama-pembeli-container').classList.add('hidden');
             document.querySelector('input[name="transaction_type"][value="masuk"]').checked = true;
@@ -607,10 +611,10 @@ const firebaseConfig = {
 
             try {
                 if (editingId) {
-                    await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/perfumeTransactions`, editingId), data);
+                    await updateDoc(doc(db, `artifacts/${APP_ID}/users/${userId}/perfumeTransactions`, editingId), data);
                     showNotification("Data berhasil diperbarui!");
                 } else {
-                    await addDoc(collection(db, `artifacts/${appId}/users/${userId}/perfumeTransactions`), { ...data, createdAt: serverTimestamp() });
+                    await addDoc(collection(db, `artifacts/${APP_ID}/users/${userId}/perfumeTransactions`), { ...data, createdAt: serverTimestamp() });
                     showNotification("Data berhasil disimpan!");
                 }
                 resetForm();
@@ -693,7 +697,12 @@ const firebaseConfig = {
 
             for (const wangi of Object.keys(groupedByWangi).sort()) {
                 const items = groupedByWangi[wangi];
-                items.sort((a, b) => new Date(b.createdAt?.toDate() || b.tanggal) - new Date(a.createdAt?.toDate() || a.tanggal));
+                // Pastikan item.createdAt ada sebelum memanggil toDate()
+                items.sort((a, b) => {
+                    const dateA = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.tanggal);
+                    const dateB = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.tanggal);
+                    return dateB - dateA;
+                });
                 
                 const masukItems = items.filter(item => item.masuk > 0);
                 const keluarItems = items.filter(item => item.keluar > 0);
@@ -737,15 +746,13 @@ const firebaseConfig = {
                     </button>
                     <div class="accordion-content open">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-black bg-opacity-20">
-                            <!-- Kolom Kiri: Riwayat Masuk -->
                             <div>
                                 <h4 class="font-semibold text-gray-300 mb-2 text-center text-green-400">Riwayat Masuk (${totalMasuk} ml)</h4>
                                 <div class="h-64 overflow-y-auto vertical-scrollbar space-y-3 p-2 bg-gray-900/50 rounded-lg">
                                     ${masukCardsHTML}
                                 </div>
                             </div>
-                            <!-- Kolom Kanan: Riwayat Keluar -->
-                             <div>
+                            <div>
                                 <h4 class="font-semibold text-gray-300 mb-2 text-center text-red-400">Riwayat Keluar (${totalKeluar} ml)</h4>
                                 <div class="h-64 overflow-y-auto vertical-scrollbar space-y-3 p-2 bg-gray-900/50 rounded-lg">
                                     ${keluarCardsHTML}
@@ -766,7 +773,8 @@ const firebaseConfig = {
         // --- Realtime Updates ---
         async function loadPriceSettings() {
             if (!userId) return;
-            const settingsRef = doc(db, `artifacts/${appId}/users/${userId}/settings/prices`);
+            // Gunakan APP_ID
+            const settingsRef = doc(db, `artifacts/${APP_ID}/users/${userId}/settings/prices`);
             const docSnap = await getDoc(settingsRef);
             if (docSnap.exists()) {
                 priceSettings = docSnap.data();
@@ -776,7 +784,8 @@ const firebaseConfig = {
         async function setupRealtimeListener() {
             if (!isAuthReady || !userId) return;
             if (unsubscribeFromTransactions) unsubscribeFromTransactions();
-            const q = query(collection(db, `artifacts/${appId}/users/${userId}/perfumeTransactions`));
+            // Gunakan APP_ID
+            const q = query(collection(db, `artifacts/${APP_ID}/users/${userId}/perfumeTransactions`));
             unsubscribeFromTransactions = onSnapshot(q, (snapshot) => {
                 allTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderData(allTransactions); 
@@ -821,26 +830,57 @@ const firebaseConfig = {
         document.getElementById('close-settings-modal').addEventListener('click', () => hideModal(settingsModal));
         document.getElementById('settings-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            // Validasi input angka untuk harga
+            const validateNumberInput = (id, fieldName) => {
+                const input = document.getElementById(id);
+                const value = parseInt(input.value);
+                if (isNaN(value) || value < 0) {
+                    showNotification(`"${fieldName}" harus berupa angka positif.`, true);
+                    input.focus();
+                    return false;
+                }
+                return value;
+            };
+
+            const hargaBeli30 = validateNumberInput('harga-beli-30', 'Harga Beli 30ml');
+            const hargaJual30 = validateNumberInput('harga-jual-30', 'Harga Jual 30ml');
+            const hargaBeli50 = validateNumberInput('harga-beli-50', 'Harga Beli 50ml');
+            const hargaJual50 = validateNumberInput('harga-jual-50', 'Harga Jual 50ml');
+            const hargaBeli100 = validateNumberInput('harga-beli-100', 'Harga Beli 100ml');
+            const hargaJual100 = validateNumberInput('harga-jual-100', 'Harga Jual 100ml');
+            const hargaBeliDefault = validateNumberInput('harga-beli-default', 'Harga Beli Default');
+            const hargaJualDefault = validateNumberInput('harga-jual-default', 'Harga Jual Default');
+
+            // Hentikan jika ada input yang tidak valid
+            if (hargaBeli30 === false || hargaJual30 === false ||
+                hargaBeli50 === false || hargaJual50 === false ||
+                hargaBeli100 === false || hargaJual100 === false ||
+                hargaBeliDefault === false || hargaJualDefault === false) {
+                return;
+            }
+
             const newPriceSettings = {
                 '30ml': {
-                    hargaBeli: parseInt(document.getElementById('harga-beli-30').value) || 0,
-                    hargaJual: parseInt(document.getElementById('harga-jual-30').value) || 0,
+                    hargaBeli: hargaBeli30,
+                    hargaJual: hargaJual30,
                 },
                 '50ml': {
-                    hargaBeli: parseInt(document.getElementById('harga-beli-50').value) || 0,
-                    hargaJual: parseInt(document.getElementById('harga-jual-50').value) || 0,
+                    hargaBeli: hargaBeli50,
+                    hargaJual: hargaJual50,
                 },
                 '100ml': {
-                    hargaBeli: parseInt(document.getElementById('harga-beli-100').value) || 0,
-                    hargaJual: parseInt(document.getElementById('harga-jual-100').value) || 0,
+                    hargaBeli: hargaBeli100,
+                    hargaJual: hargaJual100,
                 },
                 'default': {
-                    hargaBeli: parseInt(document.getElementById('harga-beli-default').value) || 0,
-                    hargaJual: parseInt(document.getElementById('harga-jual-default').value) || 0,
+                    hargaBeli: hargaBeliDefault,
+                    hargaJual: hargaJualDefault,
                 }
             };
             priceSettings = newPriceSettings;
-            const settingsRef = doc(db, `artifacts/${appId}/users/${userId}/settings/prices`);
+            // Gunakan APP_ID
+            const settingsRef = doc(db, `artifacts/${APP_ID}/users/${userId}/settings/prices`);
             await setDoc(settingsRef, priceSettings);
             showNotification("Pengaturan harga disimpan!");
             hideModal(settingsModal);
@@ -892,7 +932,7 @@ const firebaseConfig = {
             e.preventDefault();
             const now = new Date();
             const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // Perhitungan sederhana, bukan bulan kalender
 
             const incomingTransactions = allTransactions.filter(tx => tx.masuk > 0);
             const sales = allTransactions.filter(tx => tx.keluar > 0);
@@ -918,7 +958,11 @@ const firebaseConfig = {
 
         // --- Import/Export ---
         document.getElementById('export-excel-btn').addEventListener('click', () => {
-            const dataToExport = allTransactions;
+            const dataToExport = allTransactions.map(tx => {
+                // Menghilangkan createdAt dan id dari export jika tidak diperlukan di Excel
+                const { createdAt, id, ...rest } = tx; 
+                return rest;
+            });
             const ws = XLSX.utils.json_to_sheet(dataToExport);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Transaksi Parfum");
@@ -990,26 +1034,52 @@ const firebaseConfig = {
                     skipEmptyLines: true,
                     complete: async (results) => {
                         const batch = writeBatch(db);
-                        results.data.forEach(row => {
-                            const newDocRef = doc(collection(db, `artifacts/${appId}/users/${userId}/perfumeTransactions`));
+                        let importedCount = 0;
+                        let errorCount = 0;
+
+                        results.data.forEach((row, index) => {
+                            // Validasi minimal untuk data yang diimpor
+                            const tanggal = row.tanggal;
+                            const wangi = row.wangi ? row.wangi.trim() : '';
+                            const masuk = parseInt(row.masuk) || 0;
+                            const keluar = parseInt(row.keluar) || 0;
+                            const namaPembeli = row.namaPembeli ? row.namaPembeli.trim() : '';
+
+                            if (!tanggal || !wangi || (masuk <= 0 && keluar <= 0)) {
+                                console.warn(`Baris ${index + 1} diabaikan karena data tidak valid:`, row);
+                                errorCount++;
+                                return;
+                            }
+
+                            const newDocRef = doc(collection(db, `artifacts/${APP_ID}/users/${userId}/perfumeTransactions`));
                             const data = {
-                                tanggal: row.tanggal || '',
-                                wangi: row.wangi || '',
-                                masuk: parseInt(row.masuk) || 0,
-                                keluar: parseInt(row.keluar) || 0,
-                                namaPembeli: row.namaPembeli || '',
-                                createdAt: serverTimestamp()
+                                tanggal: tanggal,
+                                wangi: wangi,
+                                masuk: masuk,
+                                keluar: keluar,
+                                namaPembeli: namaPembeli,
+                                createdAt: serverTimestamp() // Atau bisa parse tanggal dari CSV jika ingin mempertahankan timestamp asli
                             };
                             batch.set(newDocRef, data);
+                            importedCount++;
                         });
+
                         try {
-                            await batch.commit();
-                            showNotification(`${results.data.length} data berhasil diimpor!`);
+                            if (importedCount > 0) {
+                                await batch.commit();
+                                showNotification(`${importedCount} data berhasil diimpor! ${errorCount > 0 ? `(${errorCount} baris bermasalah diabaikan)` : ''}`);
+                            } else {
+                                showNotification("Tidak ada data valid yang ditemukan untuk diimpor.", true);
+                            }
                             hideModal(importModal);
                         } catch (error) {
                             showNotification("Gagal mengimpor data.", true);
                             console.error("Import error:", error);
                         }
+                    },
+                    error: (err) => {
+                        showNotification(`Error parsing CSV: ${err.message}`, true);
+                        console.error("PapaParse error:", err);
                     }
                 });
             }
@@ -1048,6 +1118,7 @@ const firebaseConfig = {
                         if (tx.masuk > 0) {
                             document.querySelector('input[name="transaction_type"][value="masuk"]').checked = true;
                             document.getElementById('jumlah').value = tx.masuk;
+                            document.getElementById('nama-pembeli').value = ''; // Clear for "Masuk"
                             document.getElementById('nama-pembeli-container').classList.add('hidden');
                         } else {
                             document.querySelector('input[name="transaction_type"][value="keluar"]').checked = true;
@@ -1074,7 +1145,8 @@ const firebaseConfig = {
         document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
             if (docIdToDelete && userId) {
                 try {
-                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/perfumeTransactions`, docIdToDelete));
+                    // Gunakan APP_ID
+                    await deleteDoc(doc(db, `artifacts/${APP_ID}/users/${userId}/perfumeTransactions`, docIdToDelete));
                     showNotification("Data berhasil dihapus.");
                 } catch (error) {
                     console.error("Error deleting document: ", error);
@@ -1098,7 +1170,7 @@ const firebaseConfig = {
         // --- PIN Modal Listeners ---
         pinLockButton.addEventListener('click', () => {
             if (!isPinSet) {
-                 requestProtectedAction(() => {}); // This will trigger the PIN setup flow
+                 requestProtectedAction(() => {}); // Ini akan memicu alur pengaturan PIN
                  return;
             }
             if(isPinVerified) {
@@ -1106,7 +1178,7 @@ const firebaseConfig = {
                 updateLockIcon();
                 showNotification("Sesi dikunci.", false);
             } else {
-                requestProtectedAction(() => {}); // Ask for PIN to unlock
+                requestProtectedAction(() => {}); // Minta PIN untuk membuka kunci
             }
         });
         
@@ -1118,9 +1190,9 @@ const firebaseConfig = {
         document.getElementById('pin-cancel-button').addEventListener('click', () => {
             hideModal(pinModal);
             resetPinForm();
+            protectedAction = null; // Batalkan aksi terproteksi jika PIN dibatalkan
         });
 
     </script>
 </body>
 </html>
-
