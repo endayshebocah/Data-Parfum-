@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Database Stok Parfum - Fitur Lanjutan</title>
+    <title>Database Stok Parfum</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Library untuk Excel dan CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
@@ -92,311 +93,328 @@
 </head>
 <body class="bg-gray-900 text-white antialiased h-screen flex flex-col">
 
-    <div class="container mx-auto p-4 md:p-8 flex flex-col flex-grow min-h-0">
-        <header class="relative flex justify-between items-center mb-8 flex-shrink-0">
-            <h1 class="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
-                Database Parfum
-            </h1>
-            <div class="flex items-center gap-2">
-                <button id="pin-lock-button" class="p-3 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                     <svg id="lock-icon-svg" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 transition-colors" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-                <div class="relative">
-                    <button id="menu-button" class="p-3 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                        </svg>
-                    </button>
-                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-md shadow-lg z-20 border border-gray-700 p-2 space-y-2">
-                        <a href="#" id="toggle-summary-btn" class="block px-4 py-3 text-base text-white font-semibold bg-teal-600 rounded-lg hover:bg-teal-700 transition-colors">Sembunyikan Ringkasan</a>
-                        <a href="#" id="open-settings-modal" class="block px-4 py-3 text-base text-white font-semibold bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors">Pengaturan Harga</a>
-                        <a href="#" id="open-report-modal" class="block px-4 py-3 text-base text-white font-semibold bg-green-600 rounded-lg hover:bg-green-700 transition-colors">Laporan Keuntungan</a>
-                        <hr class="border-gray-600">
-                        <a href="#" id="export-excel-btn" class="block px-4 py-3 text-base text-white font-semibold bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">Ekspor ke Excel</a>
-                        <a href="#" id="open-import-modal" class="block px-4 py-3 text-base text-white font-semibold bg-yellow-600 rounded-lg hover:bg-yellow-700 transition-colors">Impor dari CSV</a>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <main class="space-y-8 flex-grow flex flex-col min-h-0">
-            <section id="input-section" class="bg-gray-800 p-6 rounded-xl shadow-2xl card-3d border border-gray-700 flex-shrink-0">
-                <button id="toggle-form-btn" class="w-full flex justify-between items-center text-left">
-                    <h2 id="form-title" class="text-2xl font-semibold">Input Transaksi Baru</h2>
-                    <svg id="form-toggle-icon" class="w-6 h-6 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
-                <div id="form-content-wrapper" class="form-content-wrapper mt-4 border-t-2 border-purple-500 pt-4 hidden">
-                    <form id="perfume-form" class="space-y-4">
-                        <input type="hidden" id="editing-id">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="tanggal" class="block text-sm font-medium text-gray-300 mb-1">Tanggal</label>
-                                <input type="date" id="tanggal" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none">
-                            </div>
-                            <div>
-                                <label for="wangi-parfum" class="block text-sm font-medium text-gray-300 mb-1">Wangi Parfum</label>
-                                <input type="text" id="wangi-parfum" placeholder="Contoh: Baccarat" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Jenis Transaksi</label>
-                                <div id="jenis-transaksi" class="flex gap-4 p-2 bg-gray-700 rounded-lg">
-                                    <label class="radio-label flex-1 text-center cursor-pointer">
-                                        <input type="radio" name="transaction_type" value="masuk" class="sr-only" checked>
-                                        <span class="radio-custom block w-full p-2 rounded-md border-2 border-transparent transition-colors bg-gray-600">Masuk</span>
-                                    </label>
-                                    <label class="radio-label flex-1 text-center cursor-pointer">
-                                        <input type="radio" name="transaction_type" value="keluar" class="sr-only">
-                                        <span class="radio-custom block w-full p-2 rounded-md border-2 border-transparent transition-colors bg-gray-600">Keluar</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="jumlah" class="block text-sm font-medium text-gray-300 mb-1">Jumlah (ml)</label>
-                                <input type="number" id="jumlah" min="1" placeholder="0" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none">
-                            </div>
-                        </div>
-                        <div id="nama-pembeli-container" class="hidden">
-                            <label for="nama-pembeli" class="block text-sm font-medium text-gray-300 mb-1">Nama Pembeli</label>
-                            <input type="text" id="nama-pembeli" placeholder="Nama pelanggan" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none">
-                        </div>
-                        <div class="flex gap-4 pt-4">
-                            <button type="submit" id="submit-btn" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-lg btn-3d">
-                                Simpan Transaksi
-                            </button>
-                            <button type="button" id="cancel-edit-btn" class="hidden w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg btn-3d">
-                                Batal Edit
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </section>
-
-            <section id="stock-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-6 flex-shrink-0">
-                 <div>
-                    <h3 class="text-md font-semibold text-gray-300 text-center mb-2">Total Parfum Masuk</h3>
-                    <div class="bg-gradient-to-br from-green-500 to-green-700 p-4 rounded-xl shadow-lg card-3d text-center">
-                        <p id="total-masuk" class="text-2xl xl:text-3xl font-bold">0 ml</p>
-                    </div>
-                </div>
-                <div>
-                    <h3 class="text-md font-semibold text-gray-300 text-center mb-2">Total Parfum Keluar</h3>
-                    <div class="bg-gradient-to-br from-red-500 to-red-700 p-4 rounded-xl shadow-lg card-3d text-center">
-                        <p id="total-keluar" class="text-2xl xl:text-3xl font-bold">0 ml</p>
-                    </div>
-                </div>
-                <div>
-                    <h3 class="text-md font-semibold text-gray-300 text-center mb-2">Total Stok Parfum</h3>
-                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 p-4 rounded-xl shadow-lg card-3d text-center">
-                        <p id="stok-terkini" class="text-2xl xl:text-3xl font-bold">0 ml</p>
-                    </div>
-                </div>
-            </section>
-            
-            <section class="flex-grow flex flex-col min-h-0">
-                <h2 class="text-3xl font-bold my-6 text-center border-b-2 border-gray-700 pb-4 flex-shrink-0">Kategori Stok Parfum</h2>
-                <div class="flex-grow overflow-y-auto vertical-scrollbar pr-2">
-                    <div id="perfume-categories-container" class="space-y-4">
-                        </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <div id="settings-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-30 modal-transition">
-        <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-lg transform scale-95 content-transition">
-            <h3 class="text-xl font-bold text-purple-400 mb-4">Pengaturan Harga</h3>
-            <form id="settings-form" class="space-y-6">
-                <div class="p-4 rounded-lg border border-gray-600">
-                    <h4 class="text-lg font-semibold text-gray-200 mb-2">Ukuran 30 ml</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="harga-beli-30" class="block text-sm font-medium text-gray-400 mb-1">Harga Beli /ml</label>
-                            <input type="number" id="harga-beli-30" placeholder="1666" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
-                        </div>
-                        <div>
-                            <label for="harga-jual-30" class="block text-sm font-medium text-gray-400 mb-1">Harga Jual /ml</label>
-                            <input type="number" id="harga-jual-30" placeholder="2666" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
-                        </div>
-                    </div>
-                </div>
-                <div class="p-4 rounded-lg border border-gray-600">
-                    <h4 class="text-lg font-semibold text-gray-200 mb-2">Ukuran 50 ml</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="harga-beli-50" class="block text-sm font-medium text-gray-400 mb-1">Harga Beli /ml</label>
-                            <input type="number" id="harga-beli-50" placeholder="1500" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
-                        </div>
-                        <div>
-                            <label for="harga-jual-50" class="block text-sm font-medium text-gray-400 mb-1">Harga Jual /ml</label>
-                            <input type="number" id="harga-jual-50" placeholder="2200" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
-                        </div>
-                    </div>
-                </div>
-                <div class="p-4 rounded-lg border border-gray-600">
-                    <h4 class="text-lg font-semibold text-gray-200 mb-2">Ukuran 100 ml</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="harga-beli-100" class="block text-sm font-medium text-gray-400 mb-1">Harga Beli /ml</label>
-                            <input type="number" id="harga-beli-100" placeholder="1100" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
-                        </div>
-                        <div>
-                            <label for="harga-jual-100" class="block text-sm font-medium text-gray-400 mb-1">Harga Jual /ml</label>
-                            <input type="number" id="harga-jual-100" placeholder="2100" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
-                        </div>
-                    </div>
-                </div>
-                <div class="p-4 rounded-lg bg-gray-900/50 border border-dashed border-yellow-500">
-                    <h4 class="text-lg font-semibold text-yellow-400 mb-2">Default untuk Laporan & Lainnya</h4>
-                     <p class="text-xs text-gray-400 mb-3">Harga ini digunakan jika jumlah penjualan bukan 30, 50, atau 100 ml.</p>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="harga-beli-default" class="block text-sm font-medium text-gray-400 mb-1">Harga Beli Default</label>
-                            <input type="number" id="harga-beli-default" placeholder="1500" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
-                        </div>
-                        <div>
-                            <label for="harga-jual-default" class="block text-sm font-medium text-gray-400 mb-1">Harga Jual Default</label>
-                            <input type="number" id="harga-jual-default" placeholder="2200" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
-                        </div>
-                    </div>
-                </div>
-                <div class="flex justify-end gap-4 pt-4">
-                    <button type="button" id="close-settings-modal" class="btn-3d bg-gray-600 hover:bg-gray-700 font-semibold py-2 px-6 rounded-lg">Tutup</button>
-                    <button type="submit" class="btn-3d bg-purple-600 hover:bg-purple-700 font-semibold py-2 px-6 rounded-lg">Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="report-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-30 modal-transition">
-        <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-lg transform scale-95 content-transition">
-            <h3 class="text-xl font-bold text-green-400 mb-4">Laporan Keuntungan</h3>
-            <div class="space-y-4 text-gray-300">
-                <div class="p-3 bg-yellow-900/30 rounded-lg border-l-4 border-yellow-400">
-                    <div class="flex justify-between items-center">
-                        <span class="font-semibold text-yellow-200">Modal Awal</span>
-                        <span id="report-initial-capital" class="font-bold text-lg text-yellow-300">Rp 0</span>
-                    </div>
-                </div>
-                <div class="p-3 bg-gray-700/50 rounded-lg">
-                    <div class="flex justify-between items-center">
-                        <span class="font-semibold">Keuntungan Perminggu</span>
-                        <span id="report-profit-weekly" class="font-bold text-lg text-green-300">Rp 0</span>
-                    </div>
-                </div>
-                 <div class="p-3 bg-gray-700/50 rounded-lg">
-                    <div class="flex justify-between items-center">
-                        <span class="font-semibold">Keuntungan Perbulan</span>
-                        <span id="report-profit-monthly" class="font-bold text-lg text-green-300">Rp 0</span>
-                    </div>
-                </div>
-                 <div class="p-4 bg-gray-900/50 rounded-lg border border-green-500">
-                    <div class="flex justify-between items-center">
-                        <span class="font-bold text-lg">TOTAL KEUNTUNGAN</span>
-                        <span id="report-profit-total" class="font-bold text-2xl text-green-400">Rp 0</span>
-                    </div>
-                </div>
-            </div>
-             <div class="flex justify-end pt-6">
-                <button type="button" id="close-report-modal" class="btn-3d bg-gray-600 hover:bg-gray-700 font-semibold py-2 px-6 rounded-lg">Tutup</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="import-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-30 modal-transition">
-        <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-lg transform scale-95 content-transition">
-            <h3 class="text-xl font-bold text-yellow-400 mb-4">Impor Data dari CSV</h3>
-            <div class="space-y-4">
-                <a href="#" id="download-template-btn" class="w-full block text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg btn-3d">Download Template CSV</a>
-                <div id="drop-area" class="p-10 text-center rounded-lg">
-                    <p class="text-gray-400">Seret & Lepaskan File CSV di Sini</p>
-                    <p class="text-gray-500 text-sm my-2">atau</p>
-                    <input type="file" id="file-input" class="hidden" accept=".csv">
-                    <label for="file-input" class="cursor-pointer text-purple-400 hover:text-purple-300 font-semibold">Pilih File</label>
-                </div>
-                <p id="file-name" class="text-center text-gray-500"></p>
-            </div>
-             <div class="flex justify-end gap-4 pt-6">
-                <button type="button" id="close-import-modal" class="btn-3d bg-gray-600 hover:bg-gray-700 font-semibold py-2 px-6 rounded-lg">Tutup</button>
-                <button type="button" id="import-csv-btn" class="btn-3d bg-yellow-600 hover:bg-yellow-700 font-semibold py-2 px-6 rounded-lg" disabled>Impor Sekarang</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="pin-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 modal-transition">
-        <form id="pin-form" class="bg-gray-800 rounded-lg shadow-2xl p-8 w-full max-w-xs transform scale-95 content-transition text-center">
-            <h3 id="pin-title" class="text-xl font-bold text-purple-400 mb-4">Masukkan PIN</h3>
-            <input type="password" id="pin-input-field" inputmode="numeric" pattern="[0-9]*" maxlength="4" class="w-full text-center text-3xl tracking-[1em] bg-gray-700 border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none mb-6" placeholder="••••" required>
-            <div class="flex gap-4">
-                 <button type="button" id="pin-cancel-button" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg btn-3d">Batal</button>
-                 <button type="submit" id="pin-submit-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg btn-3d">OK</button>
-            </div>
-        </form>
-    </div>
-
-    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-20 opacity-0 pointer-events-none modal-transition z-50">
-        <div id="notification-content" class="bg-white text-gray-800 p-4 rounded-lg shadow-lg max-w-sm text-center transform -translate-y-20 content-transition">
-            <p id="notification-message"></p>
-        </div>
-    </div>
-    
-    <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-40 modal-transition">
-        <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-md transform scale-95 content-transition">
-            <h3 class="text-xl font-bold text-red-400">Konfirmasi Hapus</h3>
-            <p class="text-gray-300 mt-2 mb-6">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat diurungkan.</p>
-            <div class="flex justify-end gap-4">
-                <button id="cancel-delete-btn" class="btn-3d bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg">Batal</button>
-                <button id="confirm-delete-btn" class="btn-3d bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg">Hapus</button>
-            </div>
-        </div>
+    <div id="app-container" class="container mx-auto p-4 md:p-8 flex flex-col flex-grow min-h-0">
+        <!-- Konten Aplikasi akan dirender oleh JavaScript di sini -->
     </div>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, doc, deleteDoc, updateDoc, setDoc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Setup ---
+        // PENTING: Ganti dengan konfigurasi Firebase Anda sendiri!
+        // Anda bisa mendapatkan ini dari Firebase Console proyek Anda.
         const firebaseConfig = {
-          apiKey: "AIzaSyAV2UQFCjLyYV0G5R3ULQrOnmT3R1KnPtQ",
-          authDomain: "data-parfum.firebaseapp.com",
-          projectId: "data-parfum",
-          storageBucket: "data-parfum.firebasestorage.app",
-          messagingSenderId: "509453230635",
-          appId: "1:509453230635:web:caa5098ad27ca54ba8c06e",
-          measurementId: "G-ERTBH3HWRH"
+          apiKey: "GANTI_DENGAN_API_KEY_ANDA",
+          authDomain: "GANTI_DENGAN_AUTH_DOMAIN_ANDA",
+          projectId: "GANTI_DENGAN_PROJECT_ID_ANDA",
+          storageBucket: "GANTI_DENGAN_STORAGE_BUCKET_ANDA",
+          messagingSenderId: "GANTI_DENGAN_MESSAGING_SENDER_ID_ANDA",
+          appId: "GANTI_DENGAN_APP_ID_ANDA"
         };
+        
+        const appContainer = document.getElementById('app-container');
 
-        // Inisialisasi Firebase App, Auth, dan Firestore
+        // Cek jika konfigurasi sudah diisi
+        if (firebaseConfig.apiKey === "GANTI_DENGAN_API_KEY_ANDA") {
+            appContainer.innerHTML = `<div class="flex items-center justify-center h-screen"><div class="text-center p-8 bg-gray-800 rounded-lg shadow-xl"><h2 class="text-2xl font-bold text-red-500 mb-4">Konfigurasi Diperlukan</h2><p class="text-gray-300">Konfigurasi Firebase belum diatur. Silakan edit file <strong>index.html</strong> dan masukkan konfigurasi dari proyek Firebase Anda.</p></div></div>`;
+            throw new Error("Firebase config is not set.");
+        }
+        
+        // Render a UI principal
+        appContainer.innerHTML = `
+            <header class="relative flex justify-between items-center mb-8 flex-shrink-0">
+                <h1 class="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
+                    Database Parfum
+                </h1>
+                <div class="flex items-center gap-2">
+                    <button id="pin-lock-button" class="p-3 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                         <svg id="lock-icon-svg" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 transition-colors" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div class="relative">
+                        <button id="menu-button" class="p-3 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                            </svg>
+                        </button>
+                        <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-md shadow-lg z-20 border border-gray-700 p-2 space-y-2">
+                            <a href="#" id="toggle-summary-btn" class="block px-4 py-3 text-base text-white font-semibold bg-teal-600 rounded-lg hover:bg-teal-700 transition-colors">Sembunyikan Ringkasan</a>
+                            <a href="#" id="open-settings-modal" class="block px-4 py-3 text-base text-white font-semibold bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors">Pengaturan Harga</a>
+                            <a href="#" id="open-report-modal" class="block px-4 py-3 text-base text-white font-semibold bg-green-600 rounded-lg hover:bg-green-700 transition-colors">Laporan Keuntungan</a>
+                            <hr class="border-gray-600">
+                            <a href="#" id="export-excel-btn" class="block px-4 py-3 text-base text-white font-semibold bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">Ekspor ke Excel</a>
+                            <a href="#" id="open-import-modal" class="block px-4 py-3 text-base text-white font-semibold bg-yellow-600 rounded-lg hover:bg-yellow-700 transition-colors">Impor dari CSV</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="space-y-8 flex-grow flex flex-col min-h-0">
+                <section id="input-section" class="bg-gray-800 p-6 rounded-xl shadow-2xl card-3d border border-gray-700 flex-shrink-0">
+                    <button id="toggle-form-btn" class="w-full flex justify-between items-center text-left">
+                        <h2 id="form-title" class="text-2xl font-semibold">Input Transaksi Baru</h2>
+                        <svg id="form-toggle-icon" class="w-6 h-6 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div id="form-content-wrapper" class="form-content-wrapper mt-4 border-t-2 border-purple-500 pt-4 hidden">
+                        <form id="perfume-form" class="space-y-4">
+                            <input type="hidden" id="editing-id">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="tanggal" class="block text-sm font-medium text-gray-300 mb-1">Tanggal</label>
+                                    <input type="date" id="tanggal" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label for="wangi-parfum" class="block text-sm font-medium text-gray-300 mb-1">Wangi Parfum</label>
+                                    <input type="text" id="wangi-parfum" placeholder="Contoh: Baccarat" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-1">Jenis Transaksi</label>
+                                    <div id="jenis-transaksi" class="flex gap-4 p-2 bg-gray-700 rounded-lg">
+                                        <label class="radio-label flex-1 text-center cursor-pointer">
+                                            <input type="radio" name="transaction_type" value="masuk" class="sr-only" checked>
+                                            <span class="radio-custom block w-full p-2 rounded-md border-2 border-transparent transition-colors bg-gray-600">Masuk</span>
+                                        </label>
+                                        <label class="radio-label flex-1 text-center cursor-pointer">
+                                            <input type="radio" name="transaction_type" value="keluar" class="sr-only">
+                                            <span class="radio-custom block w-full p-2 rounded-md border-2 border-transparent transition-colors bg-gray-600">Keluar</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="jumlah" class="block text-sm font-medium text-gray-300 mb-1">Jumlah (ml)</label>
+                                    <input type="number" id="jumlah" min="1" placeholder="0" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                                </div>
+                            </div>
+                            <div id="nama-pembeli-container" class="hidden">
+                                <label for="nama-pembeli" class="block text-sm font-medium text-gray-300 mb-1">Nama Pembeli</label>
+                                <input type="text" id="nama-pembeli" placeholder="Nama pelanggan" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none">
+                            </div>
+                            <div class="flex gap-4 pt-4">
+                                <button type="submit" id="submit-btn" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-lg btn-3d">
+                                    Simpan Transaksi
+                                </button>
+                                <button type="button" id="cancel-edit-btn" class="hidden w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg btn-3d">
+                                    Batal Edit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <section id="stock-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-6 flex-shrink-0">
+                     <div>
+                        <h3 class="text-md font-semibold text-gray-300 text-center mb-2">Total Parfum Masuk</h3>
+                        <div class="bg-gradient-to-br from-green-500 to-green-700 p-4 rounded-xl shadow-lg card-3d text-center">
+                            <p id="total-masuk" class="text-2xl xl:text-3xl font-bold">0 ml</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-md font-semibold text-gray-300 text-center mb-2">Total Parfum Keluar</h3>
+                        <div class="bg-gradient-to-br from-red-500 to-red-700 p-4 rounded-xl shadow-lg card-3d text-center">
+                            <p id="total-keluar" class="text-2xl xl:text-3xl font-bold">0 ml</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-md font-semibold text-gray-300 text-center mb-2">Total Stok Parfum</h3>
+                        <div class="bg-gradient-to-br from-blue-500 to-blue-700 p-4 rounded-xl shadow-lg card-3d text-center">
+                            <p id="stok-terkini" class="text-2xl xl:text-3xl font-bold">0 ml</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="flex-grow flex flex-col min-h-0">
+                    <h2 class="text-3xl font-bold my-6 text-center border-b-2 border-gray-700 pb-4 flex-shrink-0">Kategori Stok Parfum</h2>
+                    <div class="flex-grow overflow-y-auto vertical-scrollbar pr-2">
+                        <div id="perfume-categories-container" class="space-y-4">
+                            <!-- Kategori akan dirender oleh JavaScript di sini -->
+                        </div>
+                    </div>
+                </section>
+            </main>
+            
+            <div id="modal-container"></div>
+        `;
+
+        document.getElementById('modal-container').innerHTML = `
+            <div id="settings-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-30 modal-transition">
+                <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-lg transform scale-95 content-transition">
+                    <h3 class="text-xl font-bold text-purple-400 mb-4">Pengaturan Harga</h3>
+                    <form id="settings-form" class="space-y-6">
+                        <div class="p-4 rounded-lg border border-gray-600">
+                            <h4 class="text-lg font-semibold text-gray-200 mb-2">Ukuran 30 ml</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="harga-beli-30" class="block text-sm font-medium text-gray-400 mb-1">Harga Beli /ml</label>
+                                    <input type="number" id="harga-beli-30" placeholder="1666" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
+                                </div>
+                                <div>
+                                    <label for="harga-jual-30" class="block text-sm font-medium text-gray-400 mb-1">Harga Jual /ml</label>
+                                    <input type="number" id="harga-jual-30" placeholder="2666" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 rounded-lg border border-gray-600">
+                            <h4 class="text-lg font-semibold text-gray-200 mb-2">Ukuran 50 ml</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="harga-beli-50" class="block text-sm font-medium text-gray-400 mb-1">Harga Beli /ml</label>
+                                    <input type="number" id="harga-beli-50" placeholder="1500" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
+                                </div>
+                                <div>
+                                    <label for="harga-jual-50" class="block text-sm font-medium text-gray-400 mb-1">Harga Jual /ml</label>
+                                    <input type="number" id="harga-jual-50" placeholder="2200" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 rounded-lg border border-gray-600">
+                            <h4 class="text-lg font-semibold text-gray-200 mb-2">Ukuran 100 ml</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="harga-beli-100" class="block text-sm font-medium text-gray-400 mb-1">Harga Beli /ml</label>
+                                    <input type="number" id="harga-beli-100" placeholder="1100" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
+                                </div>
+                                <div>
+                                    <label for="harga-jual-100" class="block text-sm font-medium text-gray-400 mb-1">Harga Jual /ml</label>
+                                    <input type="number" id="harga-jual-100" placeholder="2100" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 rounded-lg bg-gray-900/50 border border-dashed border-yellow-500">
+                            <h4 class="text-lg font-semibold text-yellow-400 mb-2">Default untuk Laporan & Lainnya</h4>
+                             <p class="text-xs text-gray-400 mb-3">Harga ini digunakan jika jumlah penjualan bukan 30, 50, atau 100 ml.</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="harga-beli-default" class="block text-sm font-medium text-gray-400 mb-1">Harga Beli Default</label>
+                                    <input type="number" id="harga-beli-default" placeholder="1500" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
+                                </div>
+                                <div>
+                                    <label for="harga-jual-default" class="block text-sm font-medium text-gray-400 mb-1">Harga Jual Default</label>
+                                    <input type="number" id="harga-jual-default" placeholder="2200" class="w-full bg-gray-700 border-gray-500 rounded-lg px-3 py-2">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-4 pt-4">
+                            <button type="button" id="close-settings-modal" class="btn-3d bg-gray-600 hover:bg-gray-700 font-semibold py-2 px-6 rounded-lg">Tutup</button>
+                            <button type="submit" class="btn-3d bg-purple-600 hover:bg-purple-700 font-semibold py-2 px-6 rounded-lg">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="report-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-30 modal-transition">
+                <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-lg transform scale-95 content-transition">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Laporan Keuntungan</h3>
+                    <div class="space-y-4 text-gray-300">
+                        <div class="p-3 bg-yellow-900/30 rounded-lg border-l-4 border-yellow-400">
+                            <div class="flex justify-between items-center">
+                                <span class="font-semibold text-yellow-200">Modal Awal</span>
+                                <span id="report-initial-capital" class="font-bold text-lg text-yellow-300">Rp 0</span>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-gray-700/50 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="font-semibold">Keuntungan Perminggu</span>
+                                <span id="report-profit-weekly" class="font-bold text-lg text-green-300">Rp 0</span>
+                            </div>
+                        </div>
+                         <div class="p-3 bg-gray-700/50 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="font-semibold">Keuntungan Perbulan</span>
+                                <span id="report-profit-monthly" class="font-bold text-lg text-green-300">Rp 0</span>
+                            </div>
+                        </div>
+                         <div class="p-4 bg-gray-900/50 rounded-lg border border-green-500">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-lg">TOTAL KEUNTUNGAN</span>
+                                <span id="report-profit-total" class="font-bold text-2xl text-green-400">Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="flex justify-end pt-6">
+                        <button type="button" id="close-report-modal" class="btn-3d bg-gray-600 hover:bg-gray-700 font-semibold py-2 px-6 rounded-lg">Tutup</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="import-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-30 modal-transition">
+                <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-lg transform scale-95 content-transition">
+                    <h3 class="text-xl font-bold text-yellow-400 mb-4">Impor Data dari CSV</h3>
+                    <div class="space-y-4">
+                        <a href="#" id="download-template-btn" class="w-full block text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg btn-3d">Download Template CSV</a>
+                        <div id="drop-area" class="p-10 text-center rounded-lg">
+                            <p class="text-gray-400">Seret & Lepaskan File CSV di Sini</p>
+                            <p class="text-gray-500 text-sm my-2">atau</p>
+                            <input type="file" id="file-input" class="hidden" accept=".csv">
+                            <label for="file-input" class="cursor-pointer text-purple-400 hover:text-purple-300 font-semibold">Pilih File</label>
+                        </div>
+                        <p id="file-name" class="text-center text-gray-500"></p>
+                    </div>
+                     <div class="flex justify-end gap-4 pt-6">
+                        <button type="button" id="close-import-modal" class="btn-3d bg-gray-600 hover:bg-gray-700 font-semibold py-2 px-6 rounded-lg">Tutup</button>
+                        <button type="button" id="import-csv-btn" class="btn-3d bg-yellow-600 hover:bg-yellow-700 font-semibold py-2 px-6 rounded-lg" disabled>Impor Sekarang</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pin-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 modal-transition">
+                <form id="pin-form" class="bg-gray-800 rounded-lg shadow-2xl p-8 w-full max-w-xs transform scale-95 content-transition text-center">
+                    <h3 id="pin-title" class="text-xl font-bold text-purple-400 mb-4">Masukkan PIN</h3>
+                    <input type="password" id="pin-input-field" inputmode="numeric" pattern="[0-9]*" maxlength="4" class="w-full text-center text-3xl tracking-[1em] bg-gray-700 border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none mb-6" placeholder="••••" required>
+                    <div class="flex gap-4">
+                         <button type="button" id="pin-cancel-button" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg btn-3d">Batal</button>
+                         <button type="submit" id="pin-submit-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg btn-3d">OK</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-20 opacity-0 pointer-events-none modal-transition z-50">
+                <div id="notification-content" class="bg-white text-gray-800 p-4 rounded-lg shadow-lg max-w-sm text-center transform -translate-y-20 content-transition">
+                    <p id="notification-message"></p>
+                </div>
+            </div>
+            
+            <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-40 modal-transition">
+                <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-md transform scale-95 content-transition">
+                    <h3 class="text-xl font-bold text-red-400">Konfirmasi Hapus</h3>
+                    <p class="text-gray-300 mt-2 mb-6">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat diurungkan.</p>
+                    <div class="flex justify-end gap-4">
+                        <button id="cancel-delete-btn" class="btn-3d bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg">Batal</button>
+                        <button id="confirm-delete-btn" class="btn-3d bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg">Hapus</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const APP_ID = firebaseConfig.appId; // Pastikan APP_ID didefinisikan secara global
-
+        const appId = firebaseConfig.projectId;
+        
         // --- Global State ---
         let userId = null;
         let isAuthReady = false;
         let unsubscribeFromTransactions = null;
-        let allTransactions = []; // Store all transactions from Firestore
-        let docIdToDelete = null; // Store ID for deletion confirmation
+        let allTransactions = [];
+        let docIdToDelete = null;
         let priceSettings = {};
         let isSummaryVisible = true;
 
         // --- PIN Security State ---
         let isPinSet = false;
-        let isPinVerified = false; // Verifies for the current session
+        let isPinVerified = false;
         let protectedAction = null;
         let pinToConfirm = '';
-        let pinMode = 'verify'; // 'verify', 'set', 'confirm'
-        // Gunakan APP_ID yang sudah didefinisikan dari firebaseConfig
-        const PIN_KEY = `perfumeAppPIN_${APP_ID}`; 
+        let pinMode = 'verify';
+        const PIN_KEY = `perfumeAppPIN_${appId}`;
         
-        // --- DOM Elements ---
+        // --- DOM Elements (re-acquire after rendering) ---
         const menuButton = document.getElementById('menu-button');
         const dropdownMenu = document.getElementById('dropdown-menu');
         const categoriesContainer = document.getElementById('perfume-categories-container');
@@ -406,7 +424,6 @@
         const toggleSummaryBtn = document.getElementById('toggle-summary-btn');
         const stockSummarySection = document.getElementById('stock-summary');
         
-        // --- Modals ---
         const settingsModal = document.getElementById('settings-modal');
         const reportModal = document.getElementById('report-modal');
         const importModal = document.getElementById('import-modal');
@@ -463,8 +480,7 @@
         }
 
         function checkPinStatus() {
-            // Menggunakan PIN_KEY yang sudah didefinisikan dengan APP_ID
-            if (localStorage.getItem(PIN_KEY)) { 
+            if (localStorage.getItem(PIN_KEY)) {
                 isPinSet = true;
             } else {
                 isPinSet = false;
@@ -552,19 +568,12 @@
             if (user) {
                 userId = user.uid;
                 isAuthReady = true;
-                checkPinStatus(); // Pastikan ini dipanggil setelah APP_ID didefinisikan
+                checkPinStatus();
                 await loadPriceSettings();
                 await setupRealtimeListener();
             } else {
                  try {
-                    // Jika Anda memiliki mekanisme custom token, pastikan __initial_auth_token didefinisikan
-                    // Contoh: const __initial_auth_token = "YOUR_CUSTOM_TOKEN_HERE";
-                    // Jika tidak, Anda bisa langsung menggunakan signInAnonymously
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
+                    await signInAnonymously(auth);
                 } catch (error) {
                     console.error("Error during sign-in:", error);
                     showNotification("Gagal terhubung ke server.", true);
@@ -580,8 +589,7 @@
             document.getElementById('editing-id').value = '';
             document.getElementById('form-title').textContent = 'Input Transaksi Baru';
             document.getElementById('submit-btn').textContent = 'Simpan Transaksi';
-            // Pastikan submit-btn tidak tersembunyi saat reset
-            document.getElementById('submit-btn').classList.remove('hidden'); 
+            document.getElementById('submit-btn').classList.remove('hidden');
             document.getElementById('cancel-edit-btn').classList.add('hidden');
             document.getElementById('nama-pembeli-container').classList.add('hidden');
             document.querySelector('input[name="transaction_type"][value="masuk"]').checked = true;
@@ -611,10 +619,10 @@
 
             try {
                 if (editingId) {
-                    await updateDoc(doc(db, `artifacts/${APP_ID}/users/${userId}/perfumeTransactions`, editingId), data);
+                    await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/perfumeTransactions`, editingId), data);
                     showNotification("Data berhasil diperbarui!");
                 } else {
-                    await addDoc(collection(db, `artifacts/${APP_ID}/users/${userId}/perfumeTransactions`), { ...data, createdAt: serverTimestamp() });
+                    await addDoc(collection(db, `artifacts/${appId}/users/${userId}/perfumeTransactions`), { ...data, createdAt: serverTimestamp() });
                     showNotification("Data berhasil disimpan!");
                 }
                 resetForm();
@@ -680,6 +688,7 @@
         }
 
         function renderData(transactionsToRender) {
+            const categoriesContainer = document.getElementById('perfume-categories-container');
             categoriesContainer.innerHTML = '';
 
             let grandTotalMasuk = 0;
@@ -697,12 +706,7 @@
 
             for (const wangi of Object.keys(groupedByWangi).sort()) {
                 const items = groupedByWangi[wangi];
-                // Pastikan item.createdAt ada sebelum memanggil toDate()
-                items.sort((a, b) => {
-                    const dateA = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.tanggal);
-                    const dateB = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.tanggal);
-                    return dateB - dateA;
-                });
+                items.sort((a, b) => new Date(b.createdAt?.toDate() || b.tanggal) - new Date(a.createdAt?.toDate() || a.tanggal));
                 
                 const masukItems = items.filter(item => item.masuk > 0);
                 const keluarItems = items.filter(item => item.keluar > 0);
@@ -752,7 +756,7 @@
                                     ${masukCardsHTML}
                                 </div>
                             </div>
-                            <div>
+                             <div>
                                 <h4 class="font-semibold text-gray-300 mb-2 text-center text-red-400">Riwayat Keluar (${totalKeluar} ml)</h4>
                                 <div class="h-64 overflow-y-auto vertical-scrollbar space-y-3 p-2 bg-gray-900/50 rounded-lg">
                                     ${keluarCardsHTML}
@@ -773,8 +777,7 @@
         // --- Realtime Updates ---
         async function loadPriceSettings() {
             if (!userId) return;
-            // Gunakan APP_ID
-            const settingsRef = doc(db, `artifacts/${APP_ID}/users/${userId}/settings/prices`);
+            const settingsRef = doc(db, `artifacts/${appId}/users/${userId}/settings/prices`);
             const docSnap = await getDoc(settingsRef);
             if (docSnap.exists()) {
                 priceSettings = docSnap.data();
@@ -784,8 +787,7 @@
         async function setupRealtimeListener() {
             if (!isAuthReady || !userId) return;
             if (unsubscribeFromTransactions) unsubscribeFromTransactions();
-            // Gunakan APP_ID
-            const q = query(collection(db, `artifacts/${APP_ID}/users/${userId}/perfumeTransactions`));
+            const q = query(collection(db, `artifacts/${appId}/users/${userId}/perfumeTransactions`));
             unsubscribeFromTransactions = onSnapshot(q, (snapshot) => {
                 allTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderData(allTransactions); 
@@ -830,57 +832,26 @@
         document.getElementById('close-settings-modal').addEventListener('click', () => hideModal(settingsModal));
         document.getElementById('settings-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            // Validasi input angka untuk harga
-            const validateNumberInput = (id, fieldName) => {
-                const input = document.getElementById(id);
-                const value = parseInt(input.value);
-                if (isNaN(value) || value < 0) {
-                    showNotification(`"${fieldName}" harus berupa angka positif.`, true);
-                    input.focus();
-                    return false;
-                }
-                return value;
-            };
-
-            const hargaBeli30 = validateNumberInput('harga-beli-30', 'Harga Beli 30ml');
-            const hargaJual30 = validateNumberInput('harga-jual-30', 'Harga Jual 30ml');
-            const hargaBeli50 = validateNumberInput('harga-beli-50', 'Harga Beli 50ml');
-            const hargaJual50 = validateNumberInput('harga-jual-50', 'Harga Jual 50ml');
-            const hargaBeli100 = validateNumberInput('harga-beli-100', 'Harga Beli 100ml');
-            const hargaJual100 = validateNumberInput('harga-jual-100', 'Harga Jual 100ml');
-            const hargaBeliDefault = validateNumberInput('harga-beli-default', 'Harga Beli Default');
-            const hargaJualDefault = validateNumberInput('harga-jual-default', 'Harga Jual Default');
-
-            // Hentikan jika ada input yang tidak valid
-            if (hargaBeli30 === false || hargaJual30 === false ||
-                hargaBeli50 === false || hargaJual50 === false ||
-                hargaBeli100 === false || hargaJual100 === false ||
-                hargaBeliDefault === false || hargaJualDefault === false) {
-                return;
-            }
-
             const newPriceSettings = {
                 '30ml': {
-                    hargaBeli: hargaBeli30,
-                    hargaJual: hargaJual30,
+                    hargaBeli: parseInt(document.getElementById('harga-beli-30').value) || 0,
+                    hargaJual: parseInt(document.getElementById('harga-jual-30').value) || 0,
                 },
                 '50ml': {
-                    hargaBeli: hargaBeli50,
-                    hargaJual: hargaJual50,
+                    hargaBeli: parseInt(document.getElementById('harga-beli-50').value) || 0,
+                    hargaJual: parseInt(document.getElementById('harga-jual-50').value) || 0,
                 },
                 '100ml': {
-                    hargaBeli: hargaBeli100,
-                    hargaJual: hargaJual100,
+                    hargaBeli: parseInt(document.getElementById('harga-beli-100').value) || 0,
+                    hargaJual: parseInt(document.getElementById('harga-jual-100').value) || 0,
                 },
                 'default': {
-                    hargaBeli: hargaBeliDefault,
-                    hargaJual: hargaJualDefault,
+                    hargaBeli: parseInt(document.getElementById('harga-beli-default').value) || 0,
+                    hargaJual: parseInt(document.getElementById('harga-jual-default').value) || 0,
                 }
             };
             priceSettings = newPriceSettings;
-            // Gunakan APP_ID
-            const settingsRef = doc(db, `artifacts/${APP_ID}/users/${userId}/settings/prices`);
+            const settingsRef = doc(db, `artifacts/${appId}/users/${userId}/settings/prices`);
             await setDoc(settingsRef, priceSettings);
             showNotification("Pengaturan harga disimpan!");
             hideModal(settingsModal);
@@ -932,7 +903,7 @@
             e.preventDefault();
             const now = new Date();
             const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // Perhitungan sederhana, bukan bulan kalender
+            const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
             const incomingTransactions = allTransactions.filter(tx => tx.masuk > 0);
             const sales = allTransactions.filter(tx => tx.keluar > 0);
@@ -958,11 +929,7 @@
 
         // --- Import/Export ---
         document.getElementById('export-excel-btn').addEventListener('click', () => {
-            const dataToExport = allTransactions.map(tx => {
-                // Menghilangkan createdAt dan id dari export jika tidak diperlukan di Excel
-                const { createdAt, id, ...rest } = tx; 
-                return rest;
-            });
+            const dataToExport = allTransactions;
             const ws = XLSX.utils.json_to_sheet(dataToExport);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Transaksi Parfum");
@@ -1034,52 +1001,26 @@
                     skipEmptyLines: true,
                     complete: async (results) => {
                         const batch = writeBatch(db);
-                        let importedCount = 0;
-                        let errorCount = 0;
-
-                        results.data.forEach((row, index) => {
-                            // Validasi minimal untuk data yang diimpor
-                            const tanggal = row.tanggal;
-                            const wangi = row.wangi ? row.wangi.trim() : '';
-                            const masuk = parseInt(row.masuk) || 0;
-                            const keluar = parseInt(row.keluar) || 0;
-                            const namaPembeli = row.namaPembeli ? row.namaPembeli.trim() : '';
-
-                            if (!tanggal || !wangi || (masuk <= 0 && keluar <= 0)) {
-                                console.warn(`Baris ${index + 1} diabaikan karena data tidak valid:`, row);
-                                errorCount++;
-                                return;
-                            }
-
-                            const newDocRef = doc(collection(db, `artifacts/${APP_ID}/users/${userId}/perfumeTransactions`));
+                        results.data.forEach(row => {
+                            const newDocRef = doc(collection(db, `artifacts/${appId}/users/${userId}/perfumeTransactions`));
                             const data = {
-                                tanggal: tanggal,
-                                wangi: wangi,
-                                masuk: masuk,
-                                keluar: keluar,
-                                namaPembeli: namaPembeli,
-                                createdAt: serverTimestamp() // Atau bisa parse tanggal dari CSV jika ingin mempertahankan timestamp asli
+                                tanggal: row.tanggal || '',
+                                wangi: row.wangi || '',
+                                masuk: parseInt(row.masuk) || 0,
+                                keluar: parseInt(row.keluar) || 0,
+                                namaPembeli: row.namaPembeli || '',
+                                createdAt: serverTimestamp()
                             };
                             batch.set(newDocRef, data);
-                            importedCount++;
                         });
-
                         try {
-                            if (importedCount > 0) {
-                                await batch.commit();
-                                showNotification(`${importedCount} data berhasil diimpor! ${errorCount > 0 ? `(${errorCount} baris bermasalah diabaikan)` : ''}`);
-                            } else {
-                                showNotification("Tidak ada data valid yang ditemukan untuk diimpor.", true);
-                            }
+                            await batch.commit();
+                            showNotification(`${results.data.length} data berhasil diimpor!`);
                             hideModal(importModal);
                         } catch (error) {
                             showNotification("Gagal mengimpor data.", true);
                             console.error("Import error:", error);
                         }
-                    },
-                    error: (err) => {
-                        showNotification(`Error parsing CSV: ${err.message}`, true);
-                        console.error("PapaParse error:", err);
                     }
                 });
             }
@@ -1118,7 +1059,6 @@
                         if (tx.masuk > 0) {
                             document.querySelector('input[name="transaction_type"][value="masuk"]').checked = true;
                             document.getElementById('jumlah').value = tx.masuk;
-                            document.getElementById('nama-pembeli').value = ''; // Clear for "Masuk"
                             document.getElementById('nama-pembeli-container').classList.add('hidden');
                         } else {
                             document.querySelector('input[name="transaction_type"][value="keluar"]').checked = true;
@@ -1145,8 +1085,7 @@
         document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
             if (docIdToDelete && userId) {
                 try {
-                    // Gunakan APP_ID
-                    await deleteDoc(doc(db, `artifacts/${APP_ID}/users/${userId}/perfumeTransactions`, docIdToDelete));
+                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/perfumeTransactions`, docIdToDelete));
                     showNotification("Data berhasil dihapus.");
                 } catch (error) {
                     console.error("Error deleting document: ", error);
@@ -1170,7 +1109,7 @@
         // --- PIN Modal Listeners ---
         pinLockButton.addEventListener('click', () => {
             if (!isPinSet) {
-                 requestProtectedAction(() => {}); // Ini akan memicu alur pengaturan PIN
+                 requestProtectedAction(() => {}); // This will trigger the PIN setup flow
                  return;
             }
             if(isPinVerified) {
@@ -1178,7 +1117,7 @@
                 updateLockIcon();
                 showNotification("Sesi dikunci.", false);
             } else {
-                requestProtectedAction(() => {}); // Minta PIN untuk membuka kunci
+                requestProtectedAction(() => {}); // Ask for PIN to unlock
             }
         });
         
@@ -1190,9 +1129,9 @@
         document.getElementById('pin-cancel-button').addEventListener('click', () => {
             hideModal(pinModal);
             resetPinForm();
-            protectedAction = null; // Batalkan aksi terproteksi jika PIN dibatalkan
         });
 
     </script>
 </body>
 </html>
+
